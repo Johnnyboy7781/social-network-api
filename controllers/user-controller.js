@@ -58,6 +58,76 @@ const userController = {
                 }
                 res.json(dbUserData);
             })
+    },
+
+    addFriend(req, res) {
+        // Make sure user cannot friend self
+        if (req.params.userId === req.params.friendId) {
+            res.json({ message: 'Cannot friend self' });
+            return;
+        }
+
+        // Ensure friend exists first
+        User.findOneAndUpdate(
+            { _id: req.params.friendId },
+            { $addToSet: { friends: req.params.userId } },
+            { new: true }
+        )
+            .then(friend => {
+                if (!friend) {
+                    res.status(404).json({ message: 'Friend not found!' });
+                    return;
+                }
+                return User.findOneAndUpdate(
+                    { _id: req.params.userId },
+                    { $addToSet: { friends: req.params.friendId } },
+                    { new: true }
+                )
+            })
+            .then(dbUserData => {
+                if (!dbUserData) {
+                    res.status(404).json({ message: msg });
+                    return;
+                }
+                res.json(dbUserData);
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(400).json(err);
+            })
+    },
+
+    removeFriend(req, res) {
+        // Update user's friend list first
+        User.findOneAndUpdate(
+            { _id: req.params.userId },
+            { $pull: { friends: req.params.friendId } },
+            { new: true }
+        )
+            .then(user => {
+                if (!user) {
+                    res.status(404).json({ message: 'Something went wrong' });
+                    return;
+                }
+
+                // Update friend's friend list
+                return User.findOneAndUpdate(
+                    { _id: req.params.friendId },
+                    { $pull: { friends: req.params.userId } },
+                    { new: true }
+                )
+            })
+            .then(dbUserData => {
+                if (!dbUserData) {
+                    res.status(404).json({ message: 'Something went wrong' });
+                    return;
+                }
+                res.json(dbUserData);
+            })
+            .catch(err => {
+                console.log(err);
+                res.status(400).json(err);
+            })
     }
 }
 
