@@ -11,10 +11,10 @@ const UserSchema = new Schema(
         email: {
             type: String,
             required: true,
-            unique: true,
+            unique: 'Email already in use!',
             validate: {
                 validator: function(email) {
-                    return /^([a-z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/.test(email)
+                    return /^([a-zA-Z0-9_\.-]+)@([\da-z\.-]+)\.([a-z\.]{2,6})$/.test(email)
                 },
                 message: 'Not a valid email'
             }
