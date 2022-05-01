@@ -85,6 +85,32 @@ const thoughtController = {
                 res.json(dbUserData);
             })
             .catch(err => res.json(err));
+    },
+
+    createReaction(req, res) {
+        Thought.findOneAndUpdate(
+            { _id: req.params.thoughtId },
+            { $push: { reactions: req.body } },
+            { new: true, runValidators: true }
+        )
+            .then(dbData => {
+                if (!dbData) {
+                    res.status(404).json({ message: msg });
+                    return;
+                }
+                res.json(dbData)
+            })
+            .catch(err => res.json(err));
+    },
+
+    deleteReaction(req, res) {
+        Thought.findByIdAndUpdate(
+            { _id: req.params.thoughtId },
+            { $pull: { reactions: { _id: req.params.reactionId } } },
+            { new: true, runValidators: true }
+        )
+            .then(dbData => res.json(dbData))
+            .catch(err => res.json(err));
     }
 }
 

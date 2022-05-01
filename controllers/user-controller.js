@@ -1,4 +1,4 @@
-const { User } = require('../models');
+const { User, Thought } = require('../models');
 
 const msg = 'No user found with this id!';
 
@@ -50,14 +50,18 @@ const userController = {
     },
 
     deleteUser(req, res) {
-        User.findOneAndDelete({ _id: req.params.id })
+        let username;
+
+        User.findOne({ _id: req.params.id })
             .then(dbUserData => {
                 if (!dbUserData) {
                     res.status(404).json({ message: msg })
                     return;
                 }
-                res.json(dbUserData);
+                return User.findOneAndDelete({ _id: req.params.id, username: dbUserData.username })
             })
+            .then(dbData => res.json(dbData))
+            .catch(err => res.status(400).json(err));
     },
 
     addFriend(req, res) {
